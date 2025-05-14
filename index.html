@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultrasound Image Segmentation and RL Navigation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #0366d6;
+        }
+        a {
+            color: #0366d6;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            background-color: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ultrasound Image Segmentation and Reinforcement Learning Navigation</h1>
+    
+    <div class="container">
+        <h2>Project Overview</h2>
+        <p>
+            This project combines deep learning-based image segmentation with reinforcement learning to automatically 
+            navigate to regions of interest in ultrasound images. The system consists of three main components:
+        </p>
+        <ol>
+            <li><strong>Image Segmentation</strong>: A ResNet-based U-Net model trained to segment regions of interest in abdominal ultrasound images.</li>
+            <li><strong>Center Detection</strong>: An algorithm to find the centers of the segmented regions.</li>
+            <li><strong>Reinforcement Learning Navigation</strong>: A DQN (Deep Q-Network) agent trained to navigate to the centers of the segmented regions.</li>
+        </ol>
+    </div>
+    
+    <div class="container">
+        <h2>Blog Posts</h2>
+        <ul>
+            <li><a href="abdomen_segmentation_rl_blog_post.html">Ultrasound Image Segmentation and Reinforcement Learning Navigation</a></li>
+        </ul>
+    </div>
+    
+    <div class="container">
+        <h2>Results</h2>
+        <p>
+            The trained agent successfully navigates to the centers of the segmented regions with a high success rate. 
+            The improvements to address oscillations significantly enhanced the agent's performance.
+        </p>
+        
+        <h3>Example Navigation</h3>
+        <p>Here's an example of the agent navigating to a segmented region:</p>
+        <ol>
+            <li>The agent starts at a random position in the image.</li>
+            <li>It uses the segmentation model to identify the region of interest.</li>
+            <li>It navigates to the center of the segmented region using the learned policy.</li>
+            <li>The agent successfully reaches the target with minimal oscillations.</li>
+        </ol>
+    </div>
+    
+    <div class="container">
+        <h2>Repository</h2>
+        <p>
+            The complete code for this project is available on 
+            <a href="https://github.com/AnandMayank/Ultrasound_Image_rl" target="_blank">GitHub</a>.
+        </p>
+    </div>
+    
+    <footer>
+        <p>&copy; 2024 Anand Mayank</p>
+    </footer>
+</body>
+</html>
