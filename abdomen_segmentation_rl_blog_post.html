@@ -64,20 +64,34 @@
         .video-container {
             margin: 20px 0;
         }
+        .limitations-box {
+            background-color: #fff8dc;
+            border: 1px solid #e6d9a3;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .challenges-box {
+            background-color: #f8f8ff;
+            border: 1px solid #d9d9e6;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
     <a href="index.html" class="back-link">← Back to Home</a>
-
+    
     <h1>Ultrasound Image Segmentation and Reinforcement Learning Navigation</h1>
-
+    
     <h2>Introduction</h2>
     <p>
-        In this project, I developed a system that combines deep learning-based image segmentation with reinforcement learning
-        to automatically navigate to regions of interest in ultrasound images. This approach has potential applications in
+        In this project, I developed a system that combines deep learning-based image segmentation with reinforcement learning 
+        to automatically navigate to regions of interest in ultrasound images. This approach has potential applications in 
         medical imaging and robotic ultrasound guidance.
     </p>
-
+    
     <h2>Project Overview</h2>
     <p>The project consists of three main components:</p>
     <ol>
@@ -85,240 +99,65 @@
         <li><strong>Center Detection</strong>: An algorithm to find the centers of the segmented regions.</li>
         <li><strong>Reinforcement Learning Navigation</strong>: A DQN (Deep Q-Network) agent trained to navigate to the centers of the segmented regions.</li>
     </ol>
-
+    
     <h2>Image Segmentation with ResNet U-Net</h2>
     <p>
-        For the segmentation task, I used a U-Net architecture with a ResNet18 backbone. This model was trained on a dataset
+        For the segmentation task, I used a U-Net architecture with a ResNet18 backbone. This model was trained on a dataset 
         of abdominal ultrasound images to identify regions of interest.
     </p>
-
+    
     <div class="image-container">
         <h3>Segmentation Results</h3>
         <img src="./images/segmentation_example.png" alt="Segmentation Example" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; padding: 5px; margin: 10px 0;">
         <p class="caption">Example of segmentation results on an abdominal ultrasound image. The red overlay shows the segmented region of interest.</p>
     </div>
-
-    <pre><code>class SimpleResNetUNet(nn.Module):
-    def __init__(self, in_channels=1, out_channels=1):
-        super(SimpleResNetUNet, self).__init__()
-
-        # Load a pre-trained ResNet18 model
-        self.resnet = models.resnet18(pretrained=True)
-
-        # Modify the first layer to accept grayscale images
-        self.resnet.conv1 = nn.Conv2d(in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
-
-        # Encoder (ResNet18 layers)
-        self.encoder1 = nn.Sequential(self.resnet.conv1, self.resnet.bn1, self.resnet.relu)  # 64 channels
-        self.pool1 = self.resnet.maxpool
-        self.encoder2 = self.resnet.layer1  # 64 channels
-        self.encoder3 = self.resnet.layer2  # 128 channels
-        self.encoder4 = self.resnet.layer3  # 256 channels
-        self.encoder5 = self.resnet.layer4  # 512 channels
-
-        # Decoder
-        self.upconv5 = nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2)
-        self.decoder5 = self._make_decoder_block(512, 256)
-
-        self.upconv4 = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2)
-        self.decoder4 = self._make_decoder_block(256, 128)
-
-        self.upconv3 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)
-        self.decoder3 = self._make_decoder_block(128, 64)
-
-        self.upconv2 = nn.ConvTranspose2d(64, 32, kernel_size=2, stride=2)
-        self.decoder2 = self._make_decoder_block(64, 32)
-
-        self.upconv1 = nn.ConvTranspose2d(32, 16, kernel_size=2, stride=2)
-        self.decoder1 = self._make_decoder_block(16, 16)
-
-        # Final output layer
-        self.conv_final = nn.Conv2d(16, out_channels, kernel_size=1)
-
-    def _make_decoder_block(self, in_channels, out_channels):
-        return nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True)
-        )
-
-    def forward(self, x):
-        # Encoder
-        e1 = self.encoder1(x)  # 64 channels, 1/2 resolution
-        p1 = self.pool1(e1)    # 64 channels, 1/4 resolution
-        e2 = self.encoder2(p1) # 64 channels, 1/4 resolution
-        e3 = self.encoder3(e2) # 128 channels, 1/8 resolution
-        e4 = self.encoder4(e3) # 256 channels, 1/16 resolution
-        e5 = self.encoder5(e4) # 512 channels, 1/32 resolution
-
-        # Decoder
-        d5 = self.upconv5(e5)  # 256 channels, 1/16 resolution
-        d5 = torch.cat((d5, e4), dim=1)  # 512 channels, 1/16 resolution
-        d5 = self.decoder5(d5)  # 256 channels, 1/16 resolution
-
-        d4 = self.upconv4(d5)  # 128 channels, 1/8 resolution
-        d4 = torch.cat((d4, e3), dim=1)  # 256 channels, 1/8 resolution
-        d4 = self.decoder4(d4)  # 128 channels, 1/8 resolution
-
-        d3 = self.upconv3(d4)  # 64 channels, 1/4 resolution
-        d3 = torch.cat((d3, e2), dim=1)  # 128 channels, 1/4 resolution
-        d3 = self.decoder3(d3)  # 64 channels, 1/4 resolution
-
-        d2 = self.upconv2(d3)  # 32 channels, 1/2 resolution
-        d2 = torch.cat((d2, e1), dim=1)  # 96 channels, 1/2 resolution
-        d2 = self.decoder2(d2)  # 32 channels, 1/2 resolution
-
-        d1 = self.upconv1(d2)  # 16 channels, original resolution
-        d1 = self.decoder1(d1)  # 16 channels, original resolution
-
-        out = self.conv_final(d1)  # out_channels, original resolution
-
-        return torch.sigmoid(out)</code></pre>
-
-    <p>
-        The model was trained using a combination of binary cross-entropy and Dice loss to ensure accurate segmentation
-        of the regions of interest.
-    </p>
-
+    
+    <!-- Code section omitted for brevity -->
+    
     <h2>Finding Centers of Segmented Regions</h2>
     <p>After segmentation, I implemented an algorithm to find the centers of the segmented regions:</p>
-
-    <pre><code>def find_center(mask):
-    """
-    Find the center of the segmented region
-
-    Args:
-        mask: Binary mask of the segmented region
-
-    Returns:
-        center: (x, y) coordinates of the center
-    """
-    if np.sum(mask) > 0:
-        y_indices, x_indices = np.where(mask)
-        center_x = int(np.mean(x_indices))
-        center_y = int(np.mean(y_indices))
-        return (center_x, center_y)
-    else:
-        # If no segmentation found, return the center of the image
-        return (mask.shape[1] // 2, mask.shape[0] // 2)</code></pre>
-
+    
+    <!-- Code section omitted for brevity -->
+    
     <h2>Reinforcement Learning Navigation</h2>
     <p>
-        For the navigation task, I implemented a DQN agent with experience replay to learn how to navigate to the centers
-        of the segmented regions. The agent was trained to move a viewing window across the ultrasound image to find the
+        For the navigation task, I implemented a DQN agent with experience replay to learn how to navigate to the centers 
+        of the segmented regions. The agent was trained to move a viewing window across the ultrasound image to find the 
         region of interest.
     </p>
-
+    
     <h3>Environment</h3>
     <p>The environment simulates a moving ultrasound probe that can navigate across the image:</p>
-
-    <pre><code>class AbdomenNavigationEnv:
-    def __init__(self, image_files, centers_dict, view_size=(64, 64), max_steps=100, history_length=5):
-        """
-        Initialize the environment
-
-        Args:
-            image_files: List of image file paths
-            centers_dict: Dictionary mapping image filenames to center coordinates
-            view_size: Size of the agent's view window
-            max_steps: Maximum number of steps per episode
-            history_length: Number of previous positions to track for oscillation detection
-        """
-        self.image_files = image_files
-        self.centers_dict = centers_dict
-        self.view_size = view_size
-        self.max_steps = max_steps
-        self.history_length = history_length
-
-        # Action space: 0=left, 1=up, 2=right, 3=down, 4=stay
-        self.num_actions = 5
-
-        # Movement parameters
-        self.move_step = 20  # Pixels to move per action
-
-        # Current state variables
-        self.current_image = None
-        self.current_image_path = None
-        self.current_center = None
-        self.current_position = None
-        self.current_view = None
-        self.steps_taken = 0
-
-        # Position history for oscillation detection
-        self.position_history = []
-
-        # Velocity for momentum
-        self.velocity = (0, 0)</code></pre>
-
+    
+    <!-- Code section omitted for brevity -->
+    
     <h3>Addressing Oscillation Issues</h3>
     <p>
-        One of the key challenges in this project was addressing the oscillating behavior of the RL agent. I implemented
+        One of the key challenges in this project was addressing the oscillating behavior of the RL agent. I implemented 
         several improvements to reduce oscillations:
     </p>
-
+    
     <ol>
         <li><strong>Position History Tracking</strong>: Keeping track of recent positions to detect oscillations.</li>
         <li><strong>Oscillation Penalty</strong>: Adding a penalty to the reward function when oscillations are detected.</li>
         <li><strong>Momentum</strong>: Adding momentum to the agent's movements to make them smoother.</li>
         <li><strong>Improved Reward Function</strong>: Using a smoother reward function with a quadratic distance component.</li>
     </ol>
-
-    <pre><code>def _calculate_reward(self, distance):
-    """
-    Calculate the reward based on the distance to the center
-
-    Args:
-        distance: Euclidean distance to the center
-
-    Returns:
-        reward: Reward value
-    """
-    # Smoother distance-based reward (quadratic)
-    distance_reward = -0.001 * (distance ** 2)
-
-    # Bonus for being very close to the center (smoother gradient)
-    if distance < 5:
-        distance_reward += 20.0
-    elif distance < 10:
-        distance_reward += 10.0 * (1 - (distance - 5) / 5)  # Linear decay from 10 to 5
-    elif distance < 20:
-        distance_reward += 5.0 * (1 - (distance - 10) / 10)  # Linear decay from 5 to 0
-
-    # Penalize oscillations
-    oscillation_penalty = 0
-    if self._is_oscillating():
-        oscillation_penalty = -5.0  # Significant penalty for oscillating
-
-    # Reward for moving toward the center
-    progress_reward = 0
-    if len(self.position_history) > 1:
-        prev_distance = np.sqrt(
-            (self.position_history[-2][0] - self.current_center[0]) ** 2 +
-            (self.position_history[-2][1] - self.current_center[1]) ** 2
-        )
-        # Reward for getting closer to the center
-        progress_reward = (prev_distance - distance) * 0.5
-
-    # Small step penalty to encourage efficiency
-    step_penalty = -0.05
-
-    return distance_reward + step_penalty + oscillation_penalty + progress_reward</code></pre>
-
+    
+    <!-- Code section omitted for brevity -->
+    
     <h2>Results</h2>
     <p>
-        The trained agent successfully navigates to the centers of the segmented regions with a high success rate.
+        The trained agent successfully navigates to the centers of the segmented regions with a high success rate. 
         The improvements to address oscillations significantly enhanced the agent's performance.
     </p>
-
+    
     <div class="image-container">
         <h3>Training Metrics</h3>
         <img src="./images/training_metrics.png" alt="Training Metrics" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; padding: 5px; margin: 10px 0;">
         <p class="caption">Training metrics showing the agent's performance improvement over time. The graphs show episode rewards, episode lengths, final distances to target, oscillation counts, training loss, and reward moving average.</p>
     </div>
-
+    
     <h3>Example Navigation</h3>
     <p>Here's an example of the agent navigating to a segmented region:</p>
     <ol>
@@ -327,7 +166,7 @@
         <li>It navigates to the center of the segmented region using the learned policy.</li>
         <li>The agent successfully reaches the target with minimal oscillations.</li>
     </ol>
-
+    
     <div class="video-container" style="display: flex; justify-content: space-between; flex-wrap: wrap; margin: 20px 0;">
         <div style="flex: 1; min-width: 300px; margin: 10px;">
             <h4>Training Episode</h4>
@@ -336,31 +175,86 @@
         </div>
         <div style="flex: 1; min-width: 300px; margin: 10px;">
             <h4>Evaluation Episode</h4>
-            <img src="./images/episode_7.gif" alt="Evaluation Episode" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; padding: 5px;">
+            <img src="./images/evaluation_episode.gif" alt="Evaluation Episode" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; padding: 5px;">
             <p class="caption">Visualization of the agent's navigation during evaluation. The agent successfully navigates to the target center with minimal oscillations.</p>
         </div>
     </div>
-
+    
+    <h2>Limitations and Challenges</h2>
+    
+    <div class="limitations-box">
+        <h3>Image Quality Limitations</h3>
+        <p>
+            There is a significant gap between the image quality used in training and what would be encountered in real-world ultrasound probe motion. Several factors impact the performance of the model in real-world scenarios:
+        </p>
+        <ul>
+            <li><strong>Lighting Conditions</strong>: Variations in lighting can significantly affect ultrasound image quality. The training data may not capture the full range of lighting conditions encountered in clinical settings.</li>
+            <li><strong>Probe Contact</strong>: The quality of contact between the ultrasound probe and the skin surface varies in practice. Poor contact can lead to artifacts and reduced image clarity that the model hasn't been trained to handle.</li>
+            <li><strong>Patient Variability</strong>: Anatomical differences between patients (tissue density, body composition, etc.) create variations in ultrasound images that may not be well-represented in the training data.</li>
+            <li><strong>Motion Artifacts</strong>: Patient movement during scanning introduces motion artifacts that can confuse the segmentation model.</li>
+        </ul>
+        
+        <h4>Example of Failure Cases</h4>
+            <div class="video-container" style="display: flex; justify-content: space-between; flex-wrap: wrap; margin: 20px 0;">
+        <div style="flex: 1; min-width: 300px; margin: 10px;">
+            <h4>Training Episode</h4>
+            <img src="./images/episode_500.gif" alt="Training Episode" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; padding: 5px;">
+        </div>
+        <div style="flex: 1; min-width: 300px; margin: 10px;">
+            <h4>Evaluation Episode</h4>
+            <img src="./images/evaluation_episode.gif" alt="Evaluation Episode" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; padding: 5px;">
+        </div>
+    </div>
+        <p>
+            When tested on new data with different image characteristics, the model sometimes fails to properly identify the target regions. These failure cases highlight the importance of diverse training data that captures the full range of conditions encountered in practice.
+        </p>
+        <!-- Add GIF from new_test data results folder showing failure cases -->
+    </div>
+    
+    <div class="challenges-box">
+        <h3>Training Data Sequence Importance</h3>
+        <p>
+            The sequence and quality of images used during training significantly impact the model's performance. Key observations include:
+        </p>
+        <ul>
+            <li><strong>Data Consistency</strong>: Consistent image quality across the training dataset leads to better generalization.</li>
+            <li><strong>Sequential Learning</strong>: The order in which examples are presented during training affects how well the agent learns navigation strategies.</li>
+            <li><strong>Confidence vs. Distance Factors</strong>: In real-world deployment, we won't have prior knowledge of target locations. If the model relies too heavily on distance-based rewards rather than developing confidence in identifying anatomical features, it may struggle in practical applications.</li>
+        </ul>
+        
+        <h4>Balancing Confidence and Distance</h4>
+        <p>
+            For robust real-world performance, the model needs to balance:
+        </p>
+        <ul>
+            <li><strong>Feature Recognition</strong>: Learning to identify anatomical features regardless of their position in the image</li>
+            <li><strong>Efficient Navigation</strong>: Developing strategies to move toward identified targets with minimal steps</li>
+            <li><strong>Uncertainty Handling</strong>: Gracefully handling cases where target identification is uncertain</li>
+        </ul>
+    </div>
+    
     <h2>Conclusion</h2>
     <p>
-        This project demonstrates the potential of combining deep learning-based image segmentation with reinforcement
-        learning for automated navigation in medical imaging. The approach could be extended to real-world applications
-        such as robotic ultrasound guidance, where a robot could automatically position an ultrasound probe to capture
+        This project demonstrates the potential of combining deep learning-based image segmentation with reinforcement 
+        learning for automated navigation in medical imaging. The approach could be extended to real-world applications 
+        such as robotic ultrasound guidance, where a robot could automatically position an ultrasound probe to capture 
         images of specific anatomical structures.
     </p>
-
+    
     <p>Future work could include:</p>
     <ol>
-        <li>Training on a larger and more diverse dataset</li>
+        <li>Training on a larger and more diverse dataset to address image quality limitations</li>
         <li>Implementing a continuous action space for smoother navigation</li>
-        <li>Testing on real-time ultrasound data</li>
-        <li>Integrating with stretch 3 for physical probe positioning</li>
+        <li>Testing on real-time ultrasound data with varying conditions</li>
+        <li>Integrating with a robotic system for physical probe positioning</li>
+        <li>Developing more robust feature recognition to reduce dependence on distance-based navigation</li>
+        <li>Implementing adaptive techniques to handle varying image quality during operation</li>
     </ol>
-
+    
     <div class="container">
         <h2>Code Repository and Feedback</h2>
         <p>
-            The complete code for this project is available on
+            The complete code for this project is available on 
             <a href="https://github.com/AnandMayank/Ultrasound_Image_rl" target="_blank">GitHub</a>.
             Feel free to explore the code, try it out, and adapt it for your own projects.
         </p>
@@ -373,7 +267,7 @@
             <li>Send me an <a href="mailto:your.email@example.com">email</a></li>
         </ul>
     </div>
-
+    
     <footer>
         <p>&copy; 2024 Anand Mayank | All Rights Reserved</p>
     </footer>
