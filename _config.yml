@@ -1,0 +1,5 @@
+theme: jekyll-theme-cayman
+title: Ultrasound Image Segmentation and RL Navigation
+description: A project combining deep learning-based image segmentation with reinforcement learning for automated navigation in ultrasound images
+show_downloads: true
+google_analytics:
