@@ -292,6 +292,7 @@ Future work could include:
 2. Implementing a continuous action space for smoother navigation
 3. Testing on real-time ultrasound data
 4. Integrating with a robotic system for physical probe positioning
+5. Combining it with the surface that can be reconstructed from the correlated image frames using techniques like Optical Flow and Conv LSTM models which will simulate as the RGB-D camera whihc can provide the global view thus helping to know how much part of the Abdominal region has been covered .
 
 ## Code Repository
 
