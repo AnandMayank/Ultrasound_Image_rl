@@ -33,7 +33,7 @@
             font-size: 85%;
         }
         code {
-            background-color: rgba(27, 31, 35, 0.05);
+            background-color: rgba(27, 31, 35);
             border-radius: 3px;
             font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
             font-size: 85%;
@@ -120,7 +120,7 @@
     </div>
     
     <!-- Code section omitted for brevity -->
-    <code>class SimpleResNetUNet(nn.Module):
+    <pre><code>class SimpleResNetUNet(nn.Module):
     def __init__(self, in_channels=1, out_channels=1):
         super(SimpleResNetUNet, self).__init__()
 
@@ -198,7 +198,7 @@
 
         out = self.conv_final(d1)  # out_channels, original resolution
 
-        return torch.sigmoid(out)</code>
+        return torch.sigmoid(out)</code></pre>
 
     <p>
         The model was trained using a combination of binary cross-entropy and Dice loss to ensure accurate segmentation
