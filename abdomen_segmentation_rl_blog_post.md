@@ -296,8 +296,8 @@ Future work could include:
 
 ## Code Repository
 
-The complete code for this project is available on GitHub: [Link to your GitHub repository]
+The complete code for this project is available on GitHub: [https://github.com/AnandMayank/ultrasound-rl-navigation.git]
 
 ## Acknowledgments
 
-I would like to thank [mention any collaborators, advisors, or resources that helped with the project].
+I would like to thank [Dr.Surya Prakash , Dr.Chetan Arora].
